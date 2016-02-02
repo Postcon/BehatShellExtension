@@ -1,5 +1,5 @@
 {
-    "name": "postcon/shell-extension",
+    "name": "postcon/behat-shell-extension",
     "type": "behat-extension",
     "description": "A Behat Extension for executing shell commands remote and locally",
     "keywords": [
@@ -23,8 +23,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Postcon\\ShellExtension\\": "lib/",
-            "Postcon\\Tests\\ShellExtension\\": "tests/"
+            "Postcon\\BehatShellExtension\\": "lib/",
+            "Postcon\\Tests\\BehatShellExtension\\": "tests/"
         }
     }
 }
