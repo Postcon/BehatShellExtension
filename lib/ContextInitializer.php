@@ -7,6 +7,8 @@ use Behat\Behat\Context\Initializer\ContextInitializer as ContextInitializerInte
 
 class ContextInitializer implements ContextInitializerInterface
 {
+    const CLASS_NAME = __CLASS__;
+
     /** @var array */
     private $config;
 
@@ -16,6 +18,13 @@ class ContextInitializer implements ContextInitializerInterface
     public function __construct(array $config)
     {
         $this->config = $config;
+
+        if (!isset($this->config['default'])) {
+            $this->config['default'] = [
+                'type' => 'local',
+                'base_dir' => null,
+            ];
+        }
     }
 
     /**

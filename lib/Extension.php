@@ -2,6 +2,7 @@
 
 namespace Postcon\BehatShellExtension;
 
+use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\ExtensionManager;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -35,6 +36,15 @@ class Extension implements \Behat\Testwork\ServiceContainer\Extension
      */
     public function configure(ArrayNodeDefinition $builder)
     {
+        $builder
+            ->prototype('array')
+                ->children()
+                    ->enumNode('type')->values(['local', 'remote'])->defaultValue('local')->end()
+                    ->scalarNode('base_dir')->defaultNull()->end()
+                    ->scalarNode('ssh_command')->defaultValue('ssh')->end()
+                    ->scalarNode('ssh_options')->defaultNull()->end()
+                ->end()
+            ->end();
     }
 
     /**
@@ -43,5 +53,8 @@ class Extension implements \Behat\Testwork\ServiceContainer\Extension
      */
     public function load(ContainerBuilder $container, array $config)
     {
+        $definition = $container->register('postcon_shell_context_initializer', ContextInitializer::CLASS_NAME);
+        $definition->addArgument($config);
+        $definition->addTag(ContextExtension::INITIALIZER_TAG);
     }
 }
