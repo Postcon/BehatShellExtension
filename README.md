@@ -4,7 +4,7 @@
 # behat.yml
 extensions:
   ShellExtension:
-    appserver:
+    default:
       type: local
       base_dir: /tmp
     appserver:
@@ -19,6 +19,9 @@ extensions:
 
 ```gherkin
 # test.feature
+
+Feature: xyz
+
   Scenario: invoking command
     When I run "apps/kx/console do:mi:mi" on "cronserver"
 
@@ -26,5 +29,5 @@ extensions:
     When I run "apps/kx/console do:mi:mi" on "default"
 
   Scenario: invoking command
-    When I run "apps/kx/console do:mi:mi"
+    When I run "apps/kx/console do:mi:mi" # implies default
 ```
