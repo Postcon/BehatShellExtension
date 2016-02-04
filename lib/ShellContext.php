@@ -35,6 +35,16 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
+     * @Then It should pass
+     */
+    public function itShouldPass()
+    {
+        if (false === $this->process->isSuccessful()) {
+            throw new \Exception();
+        }
+    }
+
+    /**
      * @Then I see
      */
     public function iSee(PyStringNode $string = null)
@@ -49,8 +59,11 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     public function iSeeInline($output)
     {
-        if (trim($output) !== trim($this->process->getOutput())) {
-            throw new \Exception();
+        $actual   = trim($this->process->getOutput());
+        $expected = trim($output);
+
+        if ($expected !== $actual) {
+            throw new \Exception(sprintf('"%s" != "%s"', $actual, $expected));
         }
     }
 

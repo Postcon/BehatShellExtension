@@ -7,4 +7,6 @@ default:
   extensions:
     Postcon\BehatShellExtension\Extension:
       default:
+        base_dir: /tmp
+      foo:
         base_dir: /
