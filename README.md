@@ -40,6 +40,8 @@ Feature: Running commands
 
 ## Configuration
 
+To use the BehatShellExtension, it needs to be configured in the `behat.yml` (or `behat.yml.dist`). Each servr or shell, you want invoke commands on, mus be specified. Following example gives configuration for the local shell (`default`) and a remote server (named `app`).
+
 ```yml
 # behat.yml
 extensions:
@@ -49,7 +51,49 @@ extensions:
       base_dir: /tmp
     app:
       type: remote
-      base_dir: /tmp
-      ssh_options: -i .ssh/id_rsa shell.example.com
+      base_dir: /var/www/
+      ssh_command: /usr/bin/ssh
+      ssh_options: -i ~/.ssh/id_rsa shell.example.com
 ```
 
+The type can be `local` or `remote`. The current work directory for executing the command is defined using `base_dir`. The remote server address, user credentials and other relevant options for ssh are specified using `ssh_options`. Additionally the location of the ssh executable can be defined using `ssh_command`.
+
+### Defaults
+
+Without defining any server, `default` is defined automatically by the extension:
+```yml
+...
+    default:
+      type: local
+      base_dir: ~
+```
+
+## Internal implementation
+
+A command string `$command` is executed on a shell with `type: local` gets invoked in following way:
+```php
+$process = new Process($command, $serverConfig['base_dir']);
+$process->run();
+```
+
+A remote executed command string `$command` is executed this way:
+```php
+if ($serverConfig['base_dir']) {
+    $command = sprintf('cd %s ; %s', $serverConfig['base_dir'], $command);
+}
+$command = sprintf(
+    '%s %s %s',
+    $serverConfig['ssh_command'],
+    $serverConfig['ssh_options'],
+    escapeshellarg($command)
+);
+
+// e.g. ssh -i ~/.ssh/id_rsa user@shell.example.com 'cd /var/www ; app/console --env=prod do:mi:mi'
+
+$process = new Process($command);
+$process->run();
+```
+
+## License
+
+All contents of this package are licensed under the [MIT license](LICENSE).
