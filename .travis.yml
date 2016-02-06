@@ -25,3 +25,6 @@ install:
 
 script:
   - vendor/bin/behat
+  - id
+  - pwd
+  - ps -aux
