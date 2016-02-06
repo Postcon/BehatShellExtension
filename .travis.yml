@@ -12,7 +12,12 @@ php:
   - nightly
   - hhvm
 
-before_script:
+addons:
+  apt:
+    packages:
+    - openssh-server
+
+before_install:
   - composer self-update
 
 install:
