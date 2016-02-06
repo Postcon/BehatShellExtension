@@ -1,5 +1,7 @@
 # BehatShellExtension
 
+[![Build Status](https://secure.travis-ci.org/Postcon/BehatShellExtension.png)](http://travis-ci.org/Postcon/BehatShellExtension)
+
 Behat extension for executing shell commands within features. The shell commands can be run on remote servers using ssh or locally without network.
 
 ## Installation
