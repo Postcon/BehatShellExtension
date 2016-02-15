@@ -75,6 +75,7 @@ Without defining any server, `default` is defined automatically by the extension
     default:
       type: local
       base_dir: ~
+      timeout: ~
 ```
 
 ## Internal implementation
