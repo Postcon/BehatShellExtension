@@ -31,6 +31,8 @@ class ShellContext implements Context, SnippetAcceptingContext
         }
 
         $this->process = $this->createProcess($command, $this->config[$server]);
+        $this->process->setTimeout(30);
+        $this->process->setIdleTimeout(30);
         $this->process->run();
     }
 
