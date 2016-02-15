@@ -23,6 +23,7 @@ class ContextInitializer implements ContextInitializerInterface
             $this->config['default'] = [
                 'type' => 'local',
                 'base_dir' => null,
+                'timeout' => null,
             ];
         }
     }

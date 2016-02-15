@@ -40,7 +40,9 @@ Feature: Running commands
 
 ## Configuration
 
-To use the BehatShellExtension, it needs to be configured in the `behat.yml` (or `behat.yml.dist`). Each servr or shell, you want invoke commands on, mus be specified. Following example gives configuration for the local shell (`default`) and a remote server (named `app`).
+To use the BehatShellExtension, it needs to be configured in the `behat.yml` (or `behat.yml.dist`).
+Each server or shell, you want invoke commands on, must be specified.
+Following example gives configuration for the local shell (`default`) and a remote server (named `app`).
 
 ```yml
 # behat.yml
@@ -49,14 +51,21 @@ extensions:
     default:
       type: local
       base_dir: /tmp
+      timeout: 10
     app:
       type: remote
       base_dir: /var/www/
       ssh_command: /usr/bin/ssh
       ssh_options: -i ~/.ssh/id_rsa shell.example.com
+      timeout: 20
 ```
 
-The type can be `local` or `remote`. The current work directory for executing the command is defined using `base_dir`. The remote server address, user credentials and other relevant options for ssh are specified using `ssh_options`. Additionally the location of the ssh executable can be defined using `ssh_command`.
+The type can be `local` or `remote`. The current work directory for executing the command is defined using `base_dir`.
+The remote server address, user credentials and other relevant options for ssh are specified using `ssh_options`.
+
+Additionally the location of the ssh executable can be defined using `ssh_command`.
+Both, local and remote servers or shells, can have a `timeout` option.
+Commands not finishing within `timeout` seconds get stopped.
 
 ### Defaults
 
@@ -73,6 +82,7 @@ Without defining any server, `default` is defined automatically by the extension
 A command string `$command` is executed on a shell with `type: local` gets invoked in following way:
 ```php
 $process = new Process($command, $serverConfig['base_dir']);
+$process->setTimeout($serverConfig['timeout']);
 $process->run();
 ```
 
@@ -91,6 +101,7 @@ $command = sprintf(
 // e.g. ssh -i ~/.ssh/id_rsa user@shell.example.com 'cd /var/www ; app/console --env=prod do:mi:mi'
 
 $process = new Process($command);
+$process->setTimeout($serverConfig['timeout']);
 $process->run();
 ```
 

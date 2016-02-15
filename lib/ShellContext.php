@@ -31,8 +31,6 @@ class ShellContext implements Context, SnippetAcceptingContext
         }
 
         $this->process = $this->createProcess($command, $this->config[$server]);
-        $this->process->setTimeout(30);
-        $this->process->setIdleTimeout(30);
         $this->process->run();
     }
 
@@ -77,10 +75,15 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     private function createProcess($command, array $serverConfig)
     {
-        return
-            'local' === $serverConfig['type']
-                ? $this->createLocalProcess($command, $serverConfig)
-                : $this->createRemoteProcess($command, $serverConfig);
+        $process = 'local' === $serverConfig['type']
+            ? $this->createLocalProcess($command, $serverConfig)
+            : $this->createRemoteProcess($command, $serverConfig);
+
+        if (null !== $serverConfig['timeout']) {
+            $process->setTimeout($serverConfig['timeout']);
+        }
+
+        return $process;
     }
 
     /**
