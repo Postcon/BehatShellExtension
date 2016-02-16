@@ -5,7 +5,7 @@ Feature: Running commands
 
   Scenario: Run command on the default shell/server and define expected output
     When I run "pwd"
-    Then It should pass
+    Then it should pass
     And I see
     """
     /tmp
@@ -13,10 +13,10 @@ Feature: Running commands
 
   Scenario: Run command on the default shell/server and define expected output in inline-style
     When I run "pwd"
-    Then It should pass
+    Then it should pass
     And I see "/tmp"
 
   Scenario: Run command on the shell/server "foo"
     When I run "pwd" on "foo"
-    Then It should pass
+    Then it should pass
     And I see "/"

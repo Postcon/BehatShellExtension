@@ -3,8 +3,7 @@ default:
     default:
       path: %paths.base%/features
       contexts:
-        - Postcon\BehatShellExtension\ShellContext:
-            - %paths.base%/features
+        - Postcon\BehatShellExtension\ShellContext
   extensions:
     Postcon\BehatShellExtension\Extension:
       default:

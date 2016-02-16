@@ -4,6 +4,7 @@ namespace Postcon\BehatShellExtension;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\SnippetAcceptingContext;
+use Behat\Behat\Hook\Scope\ScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use Symfony\Component\Process\Process;
 
@@ -19,13 +20,8 @@ class ShellContext implements Context, SnippetAcceptingContext
     private $featurePath;
 
     /**
-     * @param string $featurePath
+     * @param array $config
      */
-    public function __construct($featurePath = __DIR__)
-    {
-        $this->featurePath = rtrim($featurePath, \DIRECTORY_SEPARATOR);;
-    }
-
     public function init(array $config)
     {
         $this->config = $config;
@@ -34,6 +30,11 @@ class ShellContext implements Context, SnippetAcceptingContext
     /**
      * @When I run :command
      * @When I run :command on :server
+     *
+     * @param string $command
+     * @param string $server
+     *
+     * @throws \Exception
      */
     public function iRun($command, $server = 'default')
     {
@@ -48,6 +49,12 @@ class ShellContext implements Context, SnippetAcceptingContext
     /**
      * @When I copy file :file to :directory
      * @When I copy file :file to :directory on :server
+     *
+     * @param string $file
+     * @param string $directory
+     * @param string $server
+     *
+     * @throws \Exception
      */
     public function iCopyFileTo($file, $directory, $server = 'default')
     {
@@ -79,6 +86,10 @@ class ShellContext implements Context, SnippetAcceptingContext
     /**
      * @Then I see
      * @Then I see :string
+     *
+     * @param string|PyStringNode $string
+     *
+     * @throws \Exception
      */
     public function iSee($string)
     {
@@ -91,8 +102,18 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
-     * @param       $command
-     * @param array $serverConfig
+     * @BeforeScenario
+     *
+     * @param ScenarioScope $scope
+     */
+    public function beforeScenario(ScenarioScope $scope)
+    {
+        $this->featurePath = dirname($scope->getFeature()->getFile());
+    }
+
+    /**
+     * @param string $command
+     * @param array  $serverConfig
      *
      * @return Process
      */
