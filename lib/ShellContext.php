@@ -15,6 +15,17 @@ class ShellContext implements Context, SnippetAcceptingContext
     /** @var Process */
     private $process;
 
+    /** @var string */
+    private $featurePath;
+
+    /**
+     * @param string $featurePath
+     */
+    public function __construct($featurePath = __DIR__)
+    {
+        $this->featurePath = rtrim($featurePath, \DIRECTORY_SEPARATOR);;
+    }
+
     public function init(array $config)
     {
         $this->config = $config;
@@ -35,6 +46,27 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
+     * @When I copy file :file to :directory
+     * @When I copy file :file to :directory on :server
+     */
+    public function iCopyFileTo($file, $directory, $server = 'default')
+    {
+        if (!isset($this->config[$server])) {
+            throw new \Exception(sprintf('Configuration not found for server "%s"', $server));
+        }
+
+        $sourceFile      = $this->featurePath . \DIRECTORY_SEPARATOR . ltrim($file, \DIRECTORY_SEPARATOR);
+        $destinationFile = $directory . \DIRECTORY_SEPARATOR . basename($file);
+
+        if ('local' === $this->config[$server]['type']) {
+            copy($sourceFile, $destinationFile);
+        } else {
+            $process = $this->createScpProcess($sourceFile, $directory, $this->config[$server]);
+            $process->run();
+        }
+    }
+
+    /**
      * @Then it should pass
      */
     public function itShouldPass()
@@ -46,21 +78,12 @@ class ShellContext implements Context, SnippetAcceptingContext
 
     /**
      * @Then I see
+     * @Then I see :string
      */
-    public function iSee(PyStringNode $string = null)
-    {
-        if (trim($string->getRaw()) !== trim($this->process->getOutput())) {
-            throw new \Exception();
-        }
-    }
-
-    /**
-     * @Then I see :output
-     */
-    public function iSeeInline($output)
+    public function iSee($string)
     {
         $actual   = trim($this->process->getOutput());
-        $expected = trim($output);
+        $expected = trim($string);
 
         if ($expected !== $actual) {
             throw new \Exception(sprintf('"%s" != "%s"', $actual, $expected));
@@ -68,7 +91,7 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
-     * @param $command
+     * @param       $command
      * @param array $serverConfig
      *
      * @return Process
@@ -88,7 +111,7 @@ class ShellContext implements Context, SnippetAcceptingContext
 
     /**
      * @param string $command
-     * @param array $serverConfig
+     * @param array  $serverConfig
      *
      * @return Process
      */
@@ -99,7 +122,7 @@ class ShellContext implements Context, SnippetAcceptingContext
 
     /**
      * @param string $command
-     * @param array $serverConfig
+     * @param array  $serverConfig
      *
      * @return Process
      */
@@ -110,10 +133,31 @@ class ShellContext implements Context, SnippetAcceptingContext
         }
 
         $command = sprintf(
-            '%s %s %s',
+            '%s %s %s %s',
             $serverConfig['ssh_command'],
             $serverConfig['ssh_options'],
+            $serverConfig['ssh_hostname'],
             escapeshellarg($command)
+        );
+
+        return new Process($command);
+    }
+
+    /**
+     * @param string $source
+     * @param string $destination
+     * @param array  $serverConfig
+     *
+     * @return Process
+     */
+    private function createScpProcess($source, $destination, array $serverConfig)
+    {
+        $command = sprintf(
+            '%s %s %s %s',
+            $serverConfig['scp_command'],
+            $serverConfig['ssh_options'],
+            escapeshellarg($source),
+            escapeshellarg($serverConfig['ssh_hostname'] . ':' . $destination)
         );
 
         return new Process($command);

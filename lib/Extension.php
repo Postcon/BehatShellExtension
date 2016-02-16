@@ -42,7 +42,9 @@ class Extension implements \Behat\Testwork\ServiceContainer\Extension
                     ->enumNode('type')->values(['local', 'remote'])->defaultValue('local')->end()
                     ->scalarNode('base_dir')->defaultNull()->end()
                     ->scalarNode('ssh_command')->defaultValue('ssh')->end()
+                    ->scalarNode('scp_command')->defaultValue('scp')->end()
                     ->scalarNode('ssh_options')->defaultNull()->end()
+                    ->scalarNode('ssh_hostname')->defaultNull()->end()
                     ->scalarNode('timeout')->defaultNull()->end()
                 ->end()
             ->end();
