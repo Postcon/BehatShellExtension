@@ -34,7 +34,7 @@ class ContextInitializer implements ContextInitializerInterface
     public function initializeContext(Context $context)
     {
         if ($context instanceof ShellContext) {
-            $context->init($this->config);
+            $context->initializeConfig($this->config);
         }
     }
 }

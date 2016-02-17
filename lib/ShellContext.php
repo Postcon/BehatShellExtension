@@ -22,9 +22,19 @@ class ShellContext implements Context, SnippetAcceptingContext
     /**
      * @param array $config
      */
-    public function init(array $config)
+    public function initializeConfig(array $config)
     {
         $this->config = $config;
+    }
+
+    /**
+     * @BeforeScenario
+     *
+     * @param ScenarioScope $scope
+     */
+    public function initializeFeatureFilePath(ScenarioScope $scope)
+    {
+        $this->featurePath = dirname($scope->getFeature()->getFile());
     }
 
     /**
@@ -99,16 +109,6 @@ class ShellContext implements Context, SnippetAcceptingContext
         if ($expected !== $actual) {
             throw new \Exception(sprintf('"%s" != "%s"', $actual, $expected));
         }
-    }
-
-    /**
-     * @BeforeScenario
-     *
-     * @param ScenarioScope $scope
-     */
-    public function beforeScenario(ScenarioScope $scope)
-    {
-        $this->featurePath = dirname($scope->getFeature()->getFile());
     }
 
     /**
