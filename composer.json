@@ -5,7 +5,8 @@
     "keywords": [
         "behat",
         "bdd",
-        "ssh"
+        "ssh",
+        "scp"
     ],
     "license": "MIT",
     "authors": [
