@@ -122,8 +122,8 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
-     * @Then I see something like
      * @Then I see something like :string
+     * @Then I see something like
      *
      * @param string|PyStringNode $string
      *
