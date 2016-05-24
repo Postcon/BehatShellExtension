@@ -20,3 +20,12 @@ Feature: Running commands
     When I run "pwd" on "foo"
     Then it should pass
     And I see "/"
+
+  Scenario: Run failing command
+    When I run "ls /I/hope/this/does/not/exist/"
+    Then it should fail
+
+  Scenario: Run command and looking for it's output
+    When I run "ls /"
+    Then it should pass
+    And I see something like "etc"

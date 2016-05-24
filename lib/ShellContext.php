@@ -88,7 +88,17 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     public function itShouldPass()
     {
-        if (false === $this->process->isSuccessful()) {
+        if (true !== $this->process->isSuccessful()) {
+            throw new \Exception(sprintf('Process failed: %s', $this->process->getCommandLine()));
+        }
+    }
+
+    /**
+     * @Then it should fail
+     */
+    public function itShouldFail()
+    {
+        if (true === $this->process->isSuccessful()) {
             throw new \Exception(sprintf('Process failed: %s', $this->process->getCommandLine()));
         }
     }
@@ -108,6 +118,24 @@ class ShellContext implements Context, SnippetAcceptingContext
 
         if ($expected !== $actual) {
             throw new \Exception(sprintf('"%s" != "%s"', $actual, $expected));
+        }
+    }
+
+    /**
+     * @Then I see something like
+     * @Then I see something like :string
+     *
+     * @param string|PyStringNode $string
+     *
+     * @throws \Exception
+     */
+    public function iSeeSomethingLike($string)
+    {
+        $actual   = trim($this->process->getOutput());
+        $expected = trim($string);
+
+        if (false === strpos($actual, $expected)) {
+            throw new \Exception(sprintf('"%s" does not contain "%s"', $actual, $expected));
         }
     }
 
