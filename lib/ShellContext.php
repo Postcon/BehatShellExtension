@@ -89,7 +89,12 @@ class ShellContext implements Context, SnippetAcceptingContext
     public function itShouldPass()
     {
         if (true !== $this->process->isSuccessful()) {
-            throw new \Exception(sprintf('Process failed: %s', $this->process->getCommandLine()));
+            throw new \Exception(sprintf(
+                    "Process failed: %s\n%s\n%s",
+                    $this->process->getCommandLine(),
+                    $this->process->getOutput(),
+                    $this->process->getErrorOutput()
+                ));
         }
     }
 
@@ -99,7 +104,7 @@ class ShellContext implements Context, SnippetAcceptingContext
     public function itShouldFail()
     {
         if (true === $this->process->isSuccessful()) {
-            throw new \Exception(sprintf('Process failed: %s', $this->process->getCommandLine()));
+            throw new \Exception(sprintf('Process passed: %s', $this->process->getCommandLine()));
         }
     }
 
