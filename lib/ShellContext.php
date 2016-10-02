@@ -75,11 +75,19 @@ class ShellContext implements Context, SnippetAcceptingContext
         $sourceFile      = $this->featurePath . \DIRECTORY_SEPARATOR . ltrim($file, \DIRECTORY_SEPARATOR);
         $destinationFile = $directory . \DIRECTORY_SEPARATOR . basename($file);
 
-        if ('local' === $this->config[$server]['type']) {
-            copy($sourceFile, $destinationFile);
-        } else {
-            $process = $this->createScpProcess($sourceFile, $directory, $this->config[$server]);
-            $process->run();
+        switch ($this->config[$server]['type']) {
+            case 'remote':
+                $process = $this->createScpProcess($sourceFile, $directory, $this->config[$server]);
+                $process->run();
+                break;
+
+            case 'docker':
+                $process = $this->createDockerCpProcess($sourceFile, $directory, $this->config[$server]);
+                $process->run();
+                break;
+
+            default:
+                copy($sourceFile, $destinationFile);
         }
     }
 
@@ -152,9 +160,19 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     private function createProcess($command, array $serverConfig)
     {
-        $process = 'local' === $serverConfig['type']
-            ? $this->createLocalProcess($command, $serverConfig)
-            : $this->createRemoteProcess($command, $serverConfig);
+        switch ($serverConfig['type']) {
+            case 'remote':
+                $process = $this->createRemoteProcess($command, $serverConfig);
+                break;
+
+            case 'docker':
+                $process = $this->createDockerProcess($command, $serverConfig);
+                break;
+
+            default:
+                $process = $this->createLocalProcess($command, $serverConfig);
+                break;
+        }
 
         if (null !== $serverConfig['timeout']) {
             $process->setTimeout($serverConfig['timeout']);
@@ -198,6 +216,28 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
+     * @param string $command
+     * @param array  $serverConfig
+     *
+     * @return Process
+     */
+    private function createDockerProcess($command, array $serverConfig)
+    {
+        if ($serverConfig['base_dir']) {
+            $command = sprintf('cd %s ; %s', $serverConfig['base_dir'], $command);
+        }
+
+        $command = sprintf(
+            '%s exec %s /bin/bash -c %s',
+            $serverConfig['docker_command'],
+            $serverConfig['docker_containername'],
+            escapeshellarg($command)
+        );
+
+        return new Process($command);
+    }
+
+    /**
      * @param string $source
      * @param string $destination
      * @param array  $serverConfig
@@ -212,6 +252,26 @@ class ShellContext implements Context, SnippetAcceptingContext
             $serverConfig['ssh_options'],
             escapeshellarg($source),
             escapeshellarg($serverConfig['ssh_hostname'] . ':' . $destination)
+        );
+
+        return new Process($command);
+    }
+
+    /**
+     * @param string $source
+     * @param string $destination
+     * @param array  $serverConfig
+     *
+     * @return Process
+     */
+    private function createDockerCpProcess($source, $destination, array $serverConfig)
+    {
+        $command = sprintf(
+            '%s cp %s %s:%s',
+            $serverConfig['docker_command'],
+            escapeshellarg($source),
+            $serverConfig['ssh_hostname'],
+            escapeshellarg($destination)
         );
 
         return new Process($command);

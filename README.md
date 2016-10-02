@@ -89,13 +89,21 @@ extensions:
       ssh_options: -i ~/.ssh/id_rsa
       ssh_hostname: shell.example.com
       timeout: 20
+    container:
+      type: docker
+      base_dir: /var/www/
+      docker_command: /usr/local/bin/docker
+      docker_containername: test
+      timeout: 20
 ```
 
-The type can be `local` or `remote`. The current work directory for executing the command is defined using `base_dir`.
+The type can be `local`, `remote`, or `docker`.
+The current work directory for executing the command is defined using `base_dir`.
 The remote server address is specified using `ssh_hostname`; user credentials and other relevant options for ssh are
 specified using `ssh_options`.
+If using type `docker`, the name of the container is specified using `docker_containername`.
 
-Additionally the location of the ssh executable can be defined using `ssh_command`.
+Additionally the location of the ssh or docker executable can be defined using `ssh_command` or `docker_command`.
 Both, local and remote servers or shells, can have a `timeout` option.
 Commands not finishing within `timeout` seconds get stopped.
 
@@ -133,6 +141,26 @@ $command = sprintf(
 );
 
 // e.g. ssh -i ~/.ssh/id_rsa user@shell.example.com 'cd /var/www ; app/console --env=prod do:mi:mi'
+
+$process = new Process($command);
+$process->setTimeout($serverConfig['timeout']);
+$process->run();
+```
+
+When using docker, a command string `$command` is executed this way:
+```php
+if ($serverConfig['base_dir']) {
+    $command = sprintf('cd %s ; %s', $serverConfig['base_dir'], $command);
+}
+
+$command = sprintf(
+    '%s exec %s /bin/bash -c %s',
+    $serverConfig['docker_command'],
+    $serverConfig['docker_containername'],
+    escapeshellarg($command)
+);
+
+// e.g. docker exec container /bin/bash -c 'cd /var/www ; app/console --env=prod do:mi:mi'
 
 $process = new Process($command);
 $process->setTimeout($serverConfig['timeout']);
