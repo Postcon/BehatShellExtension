@@ -107,6 +107,28 @@ Additionally the location of the ssh or docker executable can be defined using `
 Both, local and remote servers or shells, can have a `timeout` option.
 Commands not finishing within `timeout` seconds get stopped.
 
+### Docker-Compose
+
+Additional to docker, docker-compose can be used. The configuration need to be changed as follows:
+
+```yml
+# behat.yml
+extensions:
+  ShellExtension:
+    ...
+    service:
+      type: docker
+      base_dir: /var/www/
+      docker_command: /usr/local/bin/docker-compose
+      docker-options: -T
+      docker_containername: test
+      timeout: 20
+```
+
+The parameter `docker_command` now specifies the _docker-compose binary_ (e.g. `docker-compose` or the full path of the
+executable). The parameter `docker_containername` specifies the service name (see _docker-compose.yml_).
+It is important to specify `docker-options: -T` to »Disable pseudo-tty allocation«.
+
 ### Defaults
 
 Without defining any server, `default` is defined automatically by the extension:

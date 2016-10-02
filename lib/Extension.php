@@ -47,6 +47,7 @@ class Extension implements \Behat\Testwork\ServiceContainer\Extension
                     ->scalarNode('ssh_hostname')->defaultNull()->end()
                     ->scalarNode('timeout')->defaultNull()->end()
                     ->scalarNode('docker_command')->defaultValue('docker')->end()
+                    ->scalarNode('docker_options')->defaultNull()->end()
                     ->scalarNode('docker_containername')->defaultNull()->end()
                 ->end()
             ->end();

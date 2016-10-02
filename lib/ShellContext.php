@@ -228,8 +228,9 @@ class ShellContext implements Context, SnippetAcceptingContext
         }
 
         $command = sprintf(
-            '%s exec %s /bin/bash -c %s',
+            '%s exec %s %s /bin/bash -c %s',
             $serverConfig['docker_command'],
+            $serverConfig['docker_options'],
             $serverConfig['docker_containername'],
             escapeshellarg($command)
         );
