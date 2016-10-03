@@ -71,7 +71,22 @@ Feature: Copy file
 
 To use the BehatShellExtension, it needs to be configured in the `behat.yml` (or `behat.yml.dist`).
 Each server or shell, you want invoke commands on, must be specified.
-Following example gives configuration for the local shell (`default`) and a remote server (named `app`).
+
+### Local shell
+
+Following example shows the minimal configuration for a local shell.
+
+```yml
+# behat.yml
+extensions:
+  ShellExtension:
+    default:
+      type: local
+```
+
+It is possible, to give two additional configuration parameters: the command execution`base_dir` and the
+`timeout` (in seconds; if the commands does not terminate within this timeout, it gets stopped and the behat feature
+fails).
 
 ```yml
 # behat.yml
@@ -81,64 +96,134 @@ extensions:
       type: local
       base_dir: /tmp
       timeout: 10
-    app:
-      type: remote
-      base_dir: /var/www/
-      ssh_command: /usr/bin/ssh
-      scp_command: /usr/bin/scp
-      ssh_options: -i ~/.ssh/id_rsa
-      ssh_hostname: shell.example.com
-      timeout: 20
-    container:
-      type: docker
-      base_dir: /var/www/
-      docker_command: /usr/local/bin/docker
-      docker_containername: test
-      timeout: 20
 ```
 
-The type can be `local`, `remote`, or `docker`.
-The current work directory for executing the command is defined using `base_dir`.
-The remote server address is specified using `ssh_hostname`; user credentials and other relevant options for ssh are
-specified using `ssh_options`.
-If using type `docker`, the name of the container is specified using `docker_containername`.
+### Remote server / ssh
 
-Additionally the location of the ssh or docker executable can be defined using `ssh_command` or `docker_command`.
-Both, local and remote servers or shells, can have a `timeout` option.
-Commands not finishing within `timeout` seconds get stopped.
-
-### Docker-Compose
-
-Additional to docker, docker-compose can be used. The configuration need to be changed as follows:
+For accessing a remote server via ssh, a minimal configuration is like this:
 
 ```yml
 # behat.yml
 extensions:
   ShellExtension:
     ...
-    service:
-      type: docker
-      base_dir: /var/www/
-      docker_command: /usr/local/bin/docker-compose
-      docker-options: -T
-      docker_containername: test
+    app:
+      type: remote
+      ssh_hostname: user@shell.example.com
+```
+
+The `ssh_hostname` specifies the name of the ssh server and the username.
+Using additional parameters, the ssh connection can be configured and the _ssh_ and _scp_ binaries can be specified:
+
+```yml
+# behat.yml
+extensions:
+  ShellExtension:
+    ...
+    app:
+      type: remote
+      base_dir: /tmp
+      ssh_hostname: user@shell.example.com
+      ssh_options: -i ~/.ssh/id_rsa
+      ssh_command: /usr/bin/ssh
+      scp_command: /usr/bin/scp
       timeout: 20
 ```
 
-The parameter `docker_command` now specifies the _docker-compose binary_ (e.g. `docker-compose` or the full path of the
-executable). The parameter `docker_containername` specifies the service name (see _docker-compose.yml_).
+If we have this feature example
+```
+Scenario:
+  Given I copy file "test.txt" to "/tmp" on "app"
+  And I run "cat /tmp/test.txt" on "app"
+```
+
+then the resulting commands would be this:
+```
+/usr/bin/scp -i ~/.ssh/id_rsa 'test.txt' 'user@shell.example.com:/tmp'
+/usr/bin/ssh -i ~/.ssh/id_rsa user@shell.example.com 'cd /tmp ; cat /tmp/test.txt'
+
+```
+
+### Docker
+
+To execute commands in a _[docker](https://docs.docker.com/) container_, the following minimal configuration is appropriate:
+
+```yml
+# behat.yml
+extensions:
+  ShellExtension:
+    ...
+    app:
+      type: docker
+      docker_containername: app
+```
+
+Here, we assume to have a docker container like this:
+
+`docker run --name=app -d nginx`
+
+A more extensive configuration is this:
+
+```yml
+# behat.yml
+extensions:
+  ShellExtension:
+    ...
+    app:
+      type: docker
+      base_dir: /tmp
+      docker_containername: app
+      docker_command: /usr/local/bin/docker
+      docker_options: -u user
+      timeout: 20
+```
+
+Here, the location of the _docker executable_ is given and _options_, if needed. 
+
+If we have this feature example
+```
+Scenario:
+  Given I copy file "test.txt" to "/tmp" on "app"
+  And I run "cat /tmp/test.txt" on "app"
+```
+
+then the resulting commands would be this:
+```
+/usr/local/bin/docker cp 'test.txt' app:'/tmp'
+/usr/local/bin/docker exec -u user app /bin/bash -c 'cd /tmp ; cat /tmp/test.txt'
+```
+
+### Docker-Compose
+
+By changing the parameter `docker_command`, instead of a docker container, a _[docker-compose](https://docs.docker.com/compose/) service_ can be used:
+
+```yml
+# behat.yml
+extensions:
+  ShellExtension:
+    app:
+      type: docker
+      base_dir: /tmp
+      docker_containername: app
+      docker_command: /usr/local/bin/docker-compose
+      docker-options: -T
+      timeout: 20
+```
+
 It is important to specify `docker-options: -T` to »Disable pseudo-tty allocation«.
 
-### Defaults
+Here, we assume to have a docker-compose configuration like this:
 
-Without defining any server, `default` is defined automatically by the extension:
 ```yml
-...
-    default:
-      type: local
-      base_dir: ~
-      timeout: ~
+# docker-compose.yml
+version: '2'
+services:
+  app:
+    image: php:7.1-fpm
 ```
+
+Right now, **it is not possible to copy** files into a running docker-compose service (i.e. a command 
+`docker-compose cp` is missing).
 
 ## Internal implementation
 

@@ -271,7 +271,7 @@ class ShellContext implements Context, SnippetAcceptingContext
             '%s cp %s %s:%s',
             $serverConfig['docker_command'],
             escapeshellarg($source),
-            $serverConfig['ssh_hostname'],
+            $serverConfig['docker_containername'],
             escapeshellarg($destination)
         );
 
