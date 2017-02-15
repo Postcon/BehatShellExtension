@@ -39,13 +39,16 @@ class Extension implements \Behat\Testwork\ServiceContainer\Extension
         $builder
             ->prototype('array')
                 ->children()
-                    ->enumNode('type')->values(['local', 'remote'])->defaultValue('local')->end()
+                    ->enumNode('type')->values(['local', 'remote', 'docker'])->defaultValue('local')->end()
                     ->scalarNode('base_dir')->defaultNull()->end()
                     ->scalarNode('ssh_command')->defaultValue('ssh')->end()
                     ->scalarNode('scp_command')->defaultValue('scp')->end()
                     ->scalarNode('ssh_options')->defaultNull()->end()
                     ->scalarNode('ssh_hostname')->defaultNull()->end()
                     ->scalarNode('timeout')->defaultNull()->end()
+                    ->scalarNode('docker_command')->defaultValue('docker')->end()
+                    ->scalarNode('docker_options')->defaultNull()->end()
+                    ->scalarNode('docker_containername')->defaultNull()->end()
                 ->end()
             ->end();
     }
