@@ -10,7 +10,7 @@ php:
   - 5.6
   - 7.0
   - nightly
-  - hhvm
+#  - hhvm
 
 before_script:
   - composer self-update
