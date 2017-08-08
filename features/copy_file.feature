@@ -20,3 +20,12 @@ Feature: Copy files
     """
     content of test.txt
     """
+
+  Scenario: copy and rename
+    Given I copy file "test.txt" to "/tmp/test2.txt" on "default"
+    When I run "cat /tmp/test2.txt" on "default"
+    Then it should pass
+    And I see
+    """
+    content of test.txt
+    """

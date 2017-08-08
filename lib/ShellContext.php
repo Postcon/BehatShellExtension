@@ -72,23 +72,31 @@ class ShellContext implements Context, SnippetAcceptingContext
             throw new \Exception(sprintf('Configuration not found for server "%s"', $server));
         }
 
-        $sourceFile      = $this->featurePath . \DIRECTORY_SEPARATOR . ltrim($file, \DIRECTORY_SEPARATOR);
-        $destinationFile = $directory . \DIRECTORY_SEPARATOR . basename($file);
+        $sourceFile = $this->featurePath . \DIRECTORY_SEPARATOR . ltrim($file, \DIRECTORY_SEPARATOR);
 
         switch ($this->config[$server]['type']) {
             case 'remote':
                 $process = $this->createScpProcess($sourceFile, $directory, $this->config[$server]);
-                $process->run();
                 break;
 
             case 'docker':
                 $process = $this->createDockerCpProcess($sourceFile, $directory, $this->config[$server]);
-                $process->run();
+                break;
+
+            case 'local':
+                $process = $this->createLocalCpProcess($sourceFile, $directory);
                 break;
 
             default:
-                copy($sourceFile, $destinationFile);
+                throw new \Exception(
+                    sprintf(
+                        'Unknown server type given: %s. Possible values are (remote|docker|local)',
+                        $this->config[$server]['type']
+                    )
+                );
         }
+
+        $process->run();
     }
 
     /**
@@ -272,6 +280,22 @@ class ShellContext implements Context, SnippetAcceptingContext
             $serverConfig['docker_command'],
             escapeshellarg($source),
             $serverConfig['docker_containername'],
+            escapeshellarg($destination)
+        );
+
+        return new Process($command);
+    }
+
+    /**
+     * @param string $source
+     * @param string $destination
+     * @return Process
+     */
+    private function createLocalCpProcess($source, $destination)
+    {
+        $command = sprintf(
+            'cp %s %s',
+            escapeshellarg($source),
             escapeshellarg($destination)
         );
 
