@@ -76,15 +76,15 @@ class ShellContext implements Context, SnippetAcceptingContext
 
         switch ($this->config[$server]['type']) {
             case 'remote':
-                $process = $this->createScpProcess($sourceFile, $directory, $this->config[$server]);
+                $this->process = $this->createScpProcess($sourceFile, $directory, $this->config[$server]);
                 break;
 
             case 'docker':
-                $process = $this->createDockerCpProcess($sourceFile, $directory, $this->config[$server]);
+                $this->process = $this->createDockerCpProcess($sourceFile, $directory, $this->config[$server]);
                 break;
 
             case 'local':
-                $process = $this->createLocalCpProcess($sourceFile, $directory);
+                $this->process = $this->createLocalCpProcess($sourceFile, $directory);
                 break;
 
             default:
@@ -96,7 +96,7 @@ class ShellContext implements Context, SnippetAcceptingContext
                 );
         }
 
-        $process->run();
+        $this->process->run();
     }
 
     /**
