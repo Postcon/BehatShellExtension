@@ -271,8 +271,6 @@ class ShellContext implements Context, SnippetAcceptingContext
             escapeshellarg($command)
         );
 
-        error_log($command);
-
         return new Process($command);
     }
 
@@ -333,8 +331,6 @@ class ShellContext implements Context, SnippetAcceptingContext
             escapeshellarg($destination),
             $serverConfig['containername']
         );
-
-        error_log($command);
 
         return new Process($command);
     }
