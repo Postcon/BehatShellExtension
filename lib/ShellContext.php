@@ -326,12 +326,12 @@ class ShellContext implements Context, SnippetAcceptingContext
     private function createKubectlCpProcess($source, $destination, array $serverConfig)
     {
         $command = sprintf(
-            'kubectl cp %s/%s:%s -c %s %s',
+            'kubectl cp %s %s/%s:%s -c %s',
+            escapeshellarg($source),
             $serverConfig['namespace'],
             getenv('HOSTNAME'),
-            escapeshellarg($source),
-            $serverConfig['containername'],
-            escapeshellarg($destination)
+            escapeshellarg($destination),
+            $serverConfig['containername']
         );
 
         error_log($command);
