@@ -87,6 +87,11 @@ class ShellContext implements Context, SnippetAcceptingContext
                 $this->process = $this->createLocalCpProcess($sourceFile, $directory);
                 break;
 
+            case 'kubectl':
+                $this->process = $this->createKubectlCpProcess($sourceFile, $directory, $this->config[$server]);
+                break;
+
+
             default:
                 throw new \Exception(
                     sprintf(
@@ -177,6 +182,10 @@ class ShellContext implements Context, SnippetAcceptingContext
                 $process = $this->createDockerProcess($command, $serverConfig);
                 break;
 
+            case 'kubectl':
+                $process = $this->createKubectlProcess($command, $serverConfig);
+                break;
+
             default:
                 $process = $this->createLocalProcess($command, $serverConfig);
                 break;
@@ -247,6 +256,27 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
+     * @param string $command
+     * @param array  $serverConfig
+     *
+     * @return Process
+     */
+    private function createKubectlProcess($command, array $serverConfig)
+    {
+       $command = sprintf(
+            'kubectl -n %s exec %s -c %s -- /bin/bash -c %s',
+            $serverConfig['namespace'],
+            getenv('HOSTNAME'),
+            $serverConfig['containername'],
+            escapeshellarg($command)
+        );
+
+        error_log($command);
+
+        return new Process($command);
+    }
+
+    /**
      * @param string $source
      * @param string $destination
      * @param array  $serverConfig
@@ -282,6 +312,29 @@ class ShellContext implements Context, SnippetAcceptingContext
             $serverConfig['docker_containername'],
             escapeshellarg($destination)
         );
+
+        return new Process($command);
+    }
+
+    /**
+     * @param string $source
+     * @param string $destination
+     * @param array  $serverConfig
+     *
+     * @return Process
+     */
+    private function createKubectlCpProcess($source, $destination, array $serverConfig)
+    {
+        $command = sprintf(
+            'kubectl cp %s/%s:%s -c %s %s',
+            $serverConfig['namespace'],
+            getenv('HOSTNAME'),
+            escapeshellarg($source),
+            $serverConfig['containername'],
+            escapeshellarg($destination)
+        );
+
+        error_log($command);
 
         return new Process($command);
     }
