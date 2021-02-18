@@ -57,38 +57,89 @@ class ShellContext implements Context, SnippetAcceptingContext
     }
 
     /**
-     * @When I copy file :file to :directory
-     * @When I copy file :file to :directory on :server
+     * @When I copy file :source to :destination
+     * @When I copy file :source to :destination on :server
      *
-     * @param string $file
-     * @param string $directory
+     * @param string $source
+     * @param string $destination
      * @param string $server
      *
      * @throws \Exception
      */
-    public function iCopyFileTo($file, $directory, $server = 'default')
+    public function iCopyFileTo($source, $destination, $server = 'default')
     {
         if (!isset($this->config[$server])) {
             throw new \Exception(sprintf('Configuration not found for server "%s"', $server));
         }
 
-        $sourceFile = $this->featurePath . \DIRECTORY_SEPARATOR . ltrim($file, \DIRECTORY_SEPARATOR);
+        if (\DIRECTORY_SEPARATOR !== $source[0]) {
+            $source = $this->featurePath . \DIRECTORY_SEPARATOR . $source;
+        }
 
         switch ($this->config[$server]['type']) {
             case 'remote':
-                $this->process = $this->createScpProcess($sourceFile, $directory, $this->config[$server]);
+                $this->process = $this->createScpProcess($source, $destination, $this->config[$server]);
                 break;
 
             case 'docker':
-                $this->process = $this->createDockerCpProcess($sourceFile, $directory, $this->config[$server]);
+                $this->process = $this->createDockerCpProcess($source, $destination, $this->config[$server]);
                 break;
 
             case 'local':
-                $this->process = $this->createLocalCpProcess($sourceFile, $directory);
+                $this->process = $this->createLocalCpProcess($source, $destination);
                 break;
 
             case 'kubectl':
-                $this->process = $this->createKubectlCpProcess($sourceFile, $directory, $this->config[$server]);
+                $this->process = $this->createKubectlCpProcess($source, $destination, $this->config[$server]);
+                break;
+
+
+            default:
+                throw new \Exception(
+                    sprintf(
+                        'Unknown server type given: %s. Possible values are (remote|docker|local)',
+                        $this->config[$server]['type']
+                    )
+                );
+        }
+
+        $this->process->run();
+    }
+
+    /**
+     * @When I copy file :source on :server to :destination
+     *
+     * @param string $source
+     * @param string $destination
+     * @param string $server
+     *
+     * @throws \Exception
+     */
+    public function iCopyFileFrom($source, $destination, $server)
+    {
+        if (!isset($this->config[$server])) {
+            throw new \Exception(sprintf('Configuration not found for server "%s"', $server));
+        }
+
+        if (\DIRECTORY_SEPARATOR !== $source[0]) {
+            $source = $this->featurePath . \DIRECTORY_SEPARATOR . $source;
+        }
+
+        switch ($this->config[$server]['type']) {
+            case 'remote':
+                $this->process = $this->createScpProcess($source, $destination, $this->config[$server]);
+                break;
+
+            case 'docker':
+                $this->process = $this->createDockerCpProcess($source, $destination, $this->config[$server]);
+                break;
+
+            case 'local':
+                $this->process = $this->createLocalCpProcess($source, $destination);
+                break;
+
+            case 'kubectl':
+                $this->process = $this->createKubectlCpProcess($source, $destination, $this->config[$server]);
                 break;
 
 
